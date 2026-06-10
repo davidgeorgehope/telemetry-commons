@@ -1,0 +1,15 @@
+---
+description: OTel Java SDK mechanics for telemetry-commons — lifecycle, context, naming, processors
+globs: **/*.java
+alwaysApply: false
+---
+# OTel Java mechanics
+
+- Obtain tracers via `TelemetryProvider.getTracer(INSTRUMENTATION_NAME)`. Never call `GlobalOpenTelemetry.get()` in library code.
+- Open every `Scope` in try-with-resources. End every `Span` in `finally`. A leaked Scope corrupts context for the whole thread.
+- When submitting work to an Executor, ExecutorService, or CompletableFuture, wrap the task: `Context.current().wrap(task)`. Neither trace context nor Baggage crosses thread pools automatically.
+- Attribute keys come from `NorthgateAttributes` or the current `opentelemetry-semconv` classes. Never write inline attribute-key string literals. When unsure whether a semconv key or API is current, check @Docs (OTel Java SDK, OTel semantic conventions) — the upstream spec deprecates and renames; do not rely on memorized names.
+- Span names are low-cardinality route templates (`GET /orders/{id}`). High-cardinality values (IDs, URLs) go in attributes, never names.
+- New processors/exporters wire through the central BatchSpanProcessor configuration in TelemetryProvider. SimpleSpanProcessor is forbidden outside tests. Vendor-specific attribute mapping belongs at the Collector, not in application code.
+- Catch blocks on instrumented paths call `span.recordException(e)` and `span.setStatus(StatusCode.ERROR)` before rethrowing or handling.
+- When scaffolding instrumentation, also scaffold a JUnit 5 test using `InMemorySpanExporter` (see /telemetry-test for the pattern).

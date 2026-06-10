@@ -1,0 +1,15 @@
+---
+description: Use OpenTelemetry docs as the source of truth for telemetry/observability code
+globs: **/*.{ts,go,py,java}
+alwaysApply: false
+---
+
+# OpenTelemetry Conventions
+
+When adding or modifying tracing, metrics, logs, or instrumentation:
+
+- Consult the OpenTelemetry docs before writing instrumentation code.
+  Use the `context7` MCP tool (or `@Docs` "OpenTelemetry" if MCP is unavailable).
+- Prefer the semantic conventions for span/attribute names — do not invent attribute keys.
+- Always set up a tracer/meter via the configured provider; never instantiate SDK exporters ad hoc in business logic.
+- Verify any API against the docs for the language SDK in use; OTel APIs change across versions.

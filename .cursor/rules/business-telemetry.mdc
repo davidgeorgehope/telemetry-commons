@@ -1,0 +1,14 @@
+---
+description: Northgate business telemetry contract — Baggage, span-local attributes, PM-owned spec
+globs: **/*.java
+alwaysApply: false
+---
+# Business telemetry contract
+
+This file IS the telemetry contract. PMs propose changes by PR ("we need adoption by tenant" = one constant + one line here). Engineering reviews feasibility; CI enforces what lands.
+
+- Ubiquitous context (`northgate.customer.id`, `northgate.tenant.id`) is set into Baggage ONCE at the request edge via `TracingSupport.withBusinessContext(...)`. NEVER set these manually on individual spans — the BaggageEnrichingSpanProcessor copies them from Baggage onto every span. Manual setting causes drift.
+- Baggage is NOT automatically attached to spans. Values appear on spans only via the processor allowlist (`NorthgateAttributes.BAGGAGE_ALLOWLIST`). Do not assume a baggage entry is queryable unless the processor copies it.
+- NEVER put secrets or non-allowlisted PII in Baggage. It propagates as the W3C `baggage` HTTP header to every downstream call, including third-party APIs outside our trust boundary. The egress allowlist lives in propagator configuration, not application code.
+- Span-local business attributes that only the local code path knows (`northgate.order.id`, `northgate.shipment.id`) are set explicitly from `NorthgateAttributes` where this contract requires them: every span in an order- or shipment-domain package must carry the corresponding ID.
+- Request-path classification: packages matching `..api..` / `..http..` or methods annotated `@RequestPath`. Spans marked `@InternalSpan` are exempt from business-attribute requirements.

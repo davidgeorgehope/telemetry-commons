@@ -1,0 +1,10 @@
+---
+description: Approved boundaries — dependencies, context sources, generated code
+alwaysApply: true
+---
+# Approved boundaries
+
+- Dependencies: only the OpenTelemetry BOM, opentelemetry-semconv, opentelemetry-sdk-testing, and contrib modules already declared in build.gradle. Do not add or suggest new dependencies without explicitly flagging them for human review.
+- Context: reason from code in this repository and the indexed @Docs sources (OTel Java SDK, OTel semantic conventions). Do not fetch, paste, or adapt code from unindexed external sources.
+- Generated code must compile against existing project APIs. Do not invent new helper classes outside com.northgate.telemetry without flagging the addition.
+- If a request would violate this contract or business-telemetry.mdc, say so and propose the compliant alternative instead of complying.

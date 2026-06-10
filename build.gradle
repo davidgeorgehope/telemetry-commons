@@ -1,0 +1,39 @@
+plugins {
+    id 'java-library'
+}
+
+group = 'com.northgate'
+version = '0.1.0'
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+dependencies {
+    // OpenTelemetry BOM aligns all OTel artifact versions.
+    api platform('io.opentelemetry:opentelemetry-bom:1.63.0')
+
+    api 'io.opentelemetry:opentelemetry-api'
+    api 'io.opentelemetry:opentelemetry-sdk'
+
+    // Semantic conventions are versioned independently of the core BOM.
+    api 'io.opentelemetry.semconv:opentelemetry-semconv:1.41.1'
+
+    // InMemorySpanExporter is used by the local-dev TelemetryProvider, so this
+    // ships as a main dependency (not test-only) by design.
+    api 'io.opentelemetry:opentelemetry-sdk-testing'
+
+    testImplementation platform('org.junit:junit-bom:5.11.4')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
