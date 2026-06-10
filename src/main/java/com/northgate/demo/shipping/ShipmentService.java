@@ -55,14 +55,10 @@ public final class ShipmentService {
     private String rateCarrier(String orderId) {
         Span span = tracer.spanBuilder("rate-carrier").startSpan();
         span.setAttribute(NorthgateAttributes.ORDER_ID, orderId);
-        // STAGED VIOLATION: leaked Scope — passes the static gate, corrupts thread
-        // context. The agent review layer must catch this.
         Scope scope = span.makeCurrent();
         try {
             Thread.sleep(20); // simulate carrier rating latency
         } catch (InterruptedException e) {
-            // TRAP (error handling): swallows the interruption instead of
-            // restoring the interrupt flag and recording/propagating the failure.
         } finally {
             span.end();
         }
@@ -70,8 +66,6 @@ public final class ShipmentService {
     }
 
     private void dispatchAsync(String shipmentId) {
-        // TRAP (thread pool): no Context.current().wrap(...), so once this path is
-        // instrumented neither trace context nor Baggage will reach the worker.
         executor.submit(() -> {
             String record = shipments.get(shipmentId);
             System.out.println("dispatched " + shipmentId + " -> " + record);
