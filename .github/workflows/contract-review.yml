@@ -15,7 +15,7 @@ jobs:
         env:
           CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
         run: |
-          cursor-agent -f -p "Review this PR's diff against
+          cursor-agent --force --yolo -p "Review this PR's diff against
           .cursor/rules/business-telemetry.mdc and otel-mechanics.mdc.
           Follow helper-method indirection the static gate cannot.
           Report violations with file:line and a suggested fix.
