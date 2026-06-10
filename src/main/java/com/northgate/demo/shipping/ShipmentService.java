@@ -1,9 +1,14 @@
 package com.northgate.demo.shipping;
 
+import com.northgate.telemetry.NorthgateAttributes;
+import com.northgate.telemetry.TelemetryProvider;
 import com.northgate.telemetry.annotations.RequestPath;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Scope;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
@@ -21,11 +26,15 @@ import java.util.concurrent.ExecutorService;
  */
 public final class ShipmentService {
 
+    private static final String INSTRUMENTATION_NAME = "com.northgate.demo.shipping.ShipmentService";
+
     private final Map<String, String> shipments = new ConcurrentHashMap<>();
     private final ExecutorService executor;
+    private final Tracer tracer;
 
-    public ShipmentService(ExecutorService executor) {
+    public ShipmentService(TelemetryProvider telemetry, ExecutorService executor) {
         this.executor = executor;
+        this.tracer = telemetry.getTracer(INSTRUMENTATION_NAME);
     }
 
     /** Validates input, rates a carrier, persists the shipment, and dispatches it. */
@@ -44,11 +53,18 @@ public final class ShipmentService {
     }
 
     private String rateCarrier(String orderId) {
+        Span span = tracer.spanBuilder("rate-carrier").startSpan();
+        span.setAttribute(NorthgateAttributes.ORDER_ID, orderId);
+        // STAGED VIOLATION: leaked Scope — passes the static gate, corrupts thread
+        // context. The agent review layer must catch this.
+        Scope scope = span.makeCurrent();
         try {
             Thread.sleep(20); // simulate carrier rating latency
         } catch (InterruptedException e) {
             // TRAP (error handling): swallows the interruption instead of
             // restoring the interrupt flag and recording/propagating the failure.
+        } finally {
+            span.end();
         }
         return "carrier-standard";
     }
