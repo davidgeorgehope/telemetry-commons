@@ -1,0 +1,2 @@
+"Tried to capture a rules-off baseline in-repo; couldn't — the semantic index, the command files, git history, and above all the OrderController exemplar kept teaching the model our conventions. Lesson: the codebase defends its own patterns once an exemplar exists. Rules earn their keep on prohibitions and contract specifics, which code can't demonstrate." If an interviewer asks "where did you get stuck," that answer — tool fought me, I figured out why, the why turned out to be a design insight about their own product — is worth more than the demo beat ever was.
+
